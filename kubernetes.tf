@@ -11,45 +11,41 @@ provider "kubernetes" {
     config_path = "~/.kube/config"
 }
 
-resource "kubernetes_namespace" "demoapp" {
-  metadata {
-    name = "demoapp"
-  }
-}
-
 resource "kubernetes_deployment" "demoapp" {
   metadata {
     name      = "demoapp"
-    namespace = kubernetes_namespace.demoapp.metadata.0.name
+    labels = {
+        App = "demoapp"
+    }
   }
   spec {
     replicas = 2
     selector {
       match_labels = {
-        app = "MyDemoApp"
+        App = "MyDemoApp"
       }
     }
     template {
       metadata {
         labels = {
-          app = "MyDemoApp"
+          App = "MyDemoApp"
         }
       }
       spec {
         container {
-          image = "kcharette/sba-python:v1"
-          name  = "demoapp"
+          image = "kcharette/ec2-pipeline:58"
+          name  = "example"
           port {
             container_port = 80
           }
           resources {
             limits = {
-              cpu    = "500m"
+              cpu    = "0.5"
               memory = "512Mi"
             }
             requests = {
               cpu    = "250m"
-              memory = "64Mi"
+              memory = "512Mi"
             }
           }
         }
@@ -60,11 +56,10 @@ resource "kubernetes_deployment" "demoapp" {
 resource "kubernetes_service" "demoapp" {
   metadata {
     name      = "demoapp"
-    namespace = kubernetes_namespace.demoapp.metadata.0.name
   }
   spec {
     selector = {
-      app = kubernetes_deployment.demoapp.spec.0.template.0.metadata.0.labels.app
+      App = kubernetes_deployment.demoapp.spec.0.template.0.metadata.0.labels.App
     }
     type = "NodePort"
     port {
