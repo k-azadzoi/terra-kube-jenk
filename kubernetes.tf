@@ -16,6 +16,7 @@ resource "kubernetes_namespace" "demoapp" {
     name = "demoapp"
   }
 }
+
 resource "kubernetes_deployment" "demoapp" {
   metadata {
     name      = "demoapp"
@@ -40,6 +41,16 @@ resource "kubernetes_deployment" "demoapp" {
           name  = "demoapp"
           port {
             container_port = 80
+          }
+          resources {
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "250m"
+              memory = "64Mi"
+            }
           }
         }
       }
